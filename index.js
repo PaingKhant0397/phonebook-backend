@@ -3,6 +3,11 @@ const express = require("express");
 app = express()
 app.use(express.json())
 
+const cors = require('cors');
+app.use(cors())
+
+app.use(express.static('dist'))
+
 const morgan = require('morgan');
 morgan.token('post-data', function (req, res) { return JSON.stringify(req.body) })
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :post-data'))
