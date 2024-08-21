@@ -1,4 +1,8 @@
+require('dotenv').config()
+
 const express = require("express");
+const Person = require('./models/person')
+const mongoose = require('mongoose')
 
 app = express()
 app.use(express.json())
@@ -9,6 +13,7 @@ app.use(cors())
 app.use(express.static('dist'))
 
 const morgan = require('morgan');
+const { configDotenv } = require("dotenv");
 morgan.token('post-data', function (req, res) { return JSON.stringify(req.body) })
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :post-data'))
 
@@ -55,17 +60,22 @@ app.get('/info', (req, res) => {
 
 
 app.get("/api/persons", (request, response) => {
-  response.json(persons)
+  Person.find({}).then(notes => {
+    response.json(notes)
+  })
 })
 
 app.get('/api/persons/:id', (req, res) => {
   const id = req.params.id
-  const person = persons.find(person => person.id === id)
-  if (person) {
+  Person.findById(id).then(person => {
     res.json(person)
-  } else {
-    res.status(404).end()
-  }
+  })
+  // const person = persons.find(person => person.id === id)
+  // if (person) {
+  //   res.json(person)
+  // } else {
+  //   res.status(404).end()
+  // }
 });
 
 app.delete('/api/persons/:id', (req, res) => {
@@ -80,7 +90,7 @@ const generateId = () => {
 }
 
 const checkIfExist = (newPerson) => {
-  return persons.some(person => person.name === newPerson.name)
+  return Person.findOne({ name: newPerson.name })
 }
 
 app.post('/api/persons', (req, res) => {
@@ -96,21 +106,32 @@ app.post('/api/persons', (req, res) => {
     })
   }
 
-  const exist = checkIfExist(body)
-  if (exist) {
-    return res.status(400).json({
-      error: "name already exist on phonebook."
+  checkIfExist(body).then(exist => {
+    if (exist) {
+      return res.status(400).json({
+        error: "name already exist on phonebook."
+      })
+    }
+
+    const person = new Person({
+      name: body.name,
+      number: body.number
     })
-  }
 
-  const person = {
-    id: generateId(),
-    ...body,
-  }
+    person.save().then(savedPerson => {
+      res.json(savedPerson)
+    })
+  })
 
-  persons = persons.concat(person)
 
-  res.json(person)
+  // const person = {
+  //   id: generateId(),
+  //   ...body,
+  // }
+
+  // persons = persons.concat(person)
+
+  // res.json(person)
 });
 
 
