@@ -1,0 +1,31 @@
+.notification {
+  background: lightgrey;
+  font-size: 20px;
+  border-style: solid;
+  border-radius: 5px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.error {
+  color: red;
+}
+
+.success {
+  color: green;
+}
+
+body {
+  background-color: #3a3939;
+  color: antiquewhite;
+}
+
+input {
+  background-color: rgb(49, 49, 43);
+  color: antiquewhite;
+}
+
+button {
+  background-color: rgb(49, 49, 43);
+  color: antiquewhite;
+}
