@@ -50,7 +50,7 @@ let persons = [
   }
 ]
 
-app.get("/", (requst, response) => {
+app.get("/", (request, response) => {
   response.send("<h1>Hello world</h1>")
 })
 
@@ -67,9 +67,15 @@ app.get("/api/persons", (request, response) => {
 
 app.get('/api/persons/:id', (req, res) => {
   const id = req.params.id
-  Person.findById(id).then(person => {
-    res.json(person)
-  })
+  Person.findById(id)
+    .then(person => {
+      if (person) {
+        res.json(person)
+      } else {
+        res.status(404).end();
+      }
+    })
+    .catch(error => next(error))
   // const person = persons.find(person => person.id === id)
   // if (person) {
   //   res.json(person)
@@ -78,11 +84,13 @@ app.get('/api/persons/:id', (req, res) => {
   // }
 });
 
-app.delete('/api/persons/:id', (req, res) => {
+app.delete('/api/persons/:id', (req, res, next) => {
   const id = req.params.id
-  persons = persons.filter(person => person.id !== id)
-
-  res.status(204).end()
+  Person.findByIdAndDelete(id)
+    .then(result => {
+      res.status(204).end()
+    })
+    .catch(error => next(error))
 });
 
 const generateId = () => {
@@ -92,6 +100,23 @@ const generateId = () => {
 const checkIfExist = (newPerson) => {
   return Person.findOne({ name: newPerson.name })
 }
+
+app.put('api/persons/:id', (req, res, next) => {
+  const id = req.params.id
+  const body = req.body
+
+  const person = {
+    name: body.name,
+    number: body.number,
+  }
+
+  Person.findByIdAndUpdate(id, person, { new: true })
+    .then(updatedPerson => {
+      res.json(updatedPerson)
+    })
+    .catch(error => next(error))
+})
+
 
 app.post('/api/persons', (req, res) => {
   const body = req.body
@@ -141,6 +166,18 @@ const unknownEndpoints = (request, response) => {
 }
 
 app.use(unknownEndpoints)
+
+const errorHandler = (error, req, res, next) => {
+  console.error(error.message);
+
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' })
+  }
+
+  next(error)
+}
+
+app.use(errorHandler)
 
 
 const PORT = process.env.PORT || 3001
