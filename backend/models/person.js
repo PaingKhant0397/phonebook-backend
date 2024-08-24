@@ -18,10 +18,25 @@ mongoose.connect(url)
   })
 
 //define the schema 
+const phoneRegex = /^(\d{2,3})-(\d{5,})$/;
+
 const personSchema = new mongoose.Schema({
-  name: String,
-  number: String
-})
+  name: {
+    type: String,
+    minLength: 3,
+    required: true
+  },
+  number: {
+    type: String,
+    validate: {
+      validator: function (v) {
+        return phoneRegex.test(v);
+      },
+      message: props => `${props.value} is not a valid phone number! Phone number must be in the form XX-XXXXXXX or XXX-XXXXXXXX.`
+    },
+    required: [true, 'User phone number required']
+  }
+});
 
 // transform the output of id from object to string
 personSchema.set('toJSON', {
