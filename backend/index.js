@@ -101,7 +101,7 @@ const checkIfExist = (newPerson) => {
   return Person.findOne({ name: newPerson.name })
 }
 
-app.put('api/persons/:id', (req, res, next) => {
+app.put('/api/persons/:id', (req, res, next) => {
   const id = req.params.id
   const body = req.body
 
