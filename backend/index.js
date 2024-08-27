@@ -134,7 +134,7 @@ app.post('/api/persons', (req, res, next) => {
   checkIfExist(body).then(exist => {
     if (exist) {
       return res.status(400).json({
-        error: "name already exist on phonebook."
+        error: 'name already exist on phonebook.'
       })
     }
 

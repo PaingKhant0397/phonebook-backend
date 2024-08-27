@@ -43,37 +43,59 @@ const App = () => {
 
   const handleAdd = (event) => {
     event.preventDefault();
-    const isExist = checkIfExist(persons, newName);
-    if (isExist) {
-      if (window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`)) {
-        const personToUpdate = persons.find(person => person.name === newName)
-        const updatedPerson = {
-          ...personToUpdate,
-          number: newNumber
+    // const isExist = checkIfExist(persons, newName);
+    // if (isExist) {
+    //   if (window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`)) {
+    //     const personToUpdate = persons.find(person => person.name === newName)
+    //     const updatedPerson = {
+    //       ...personToUpdate,
+    //       number: newNumber
+    //     }
+    //     personServices
+    //       .update(personToUpdate.id, updatedPerson)
+    //       .then(updatedPerson => {
+    //         setPersons(persons.map(person => person.id === updatedPerson.id ? updatedPerson : person))
+    //         setNewName('')
+    //         setNewNumber('')
+    //         showSuccess(`Changed Number of ${updatedPerson.name} to ${updatedPerson.number}`)
+    //       })
+    //   }
+    // } else {
+    const newPerson = {
+      name: newName,
+      number: newNumber,
+    };
+    personServices
+      .add(newPerson)
+      .then(addedPerson => {
+        setPersons(persons.concat(addedPerson))
+        setNewName('');
+        setNewNumber('');
+        showSuccess(`Added ${addedPerson.name}`)
+      }).catch(error => {
+        console.error(error)
+        if (error.response.status === 400 && error.response.data.error === "name already exist on phonebook.") {
+          if (window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`)) {
+            const personToUpdate = persons.find(person => person.name === newName)
+            const updatedPerson = {
+              ...personToUpdate,
+              number: newNumber
+            }
+            personServices
+              .update(personToUpdate.id, updatedPerson)
+              .then(updatedPerson => {
+                setPersons(persons.map(person => person.id === updatedPerson.id ? updatedPerson : person))
+                setNewName('')
+                setNewNumber('')
+                showSuccess(`Changed Number of ${updatedPerson.name} to ${updatedPerson.number}`)
+              }).catch(error => showError(error.response.data.error))
+          }
+        } else {
+          showError(error.response.data.error)
         }
-        personServices
-          .update(personToUpdate.id, updatedPerson)
-          .then(updatedPerson => {
-            setPersons(persons.map(person => person.id === updatedPerson.id ? updatedPerson : person))
-            setNewName('')
-            setNewNumber('')
-            showSuccess(`Changed Number of ${updatedPerson.name} to ${updatedPerson.number}`)
-          })
-      }
-    } else {
-      const newPerson = {
-        name: newName,
-        number: newNumber,
-      };
-      personServices
-        .add(newPerson)
-        .then(addedPerson => {
-          setPersons(persons.concat(addedPerson))
-          setNewName('');
-          setNewNumber('');
-          showSuccess(`Added ${addedPerson.name}`)
-        })
-    }
+
+      })
+
   };
 
   const handleDelete = (id) => {
